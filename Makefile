@@ -5,3 +5,6 @@ motor: motor.c serial.c
 
 lidar: lidar.c serial.c
 	gcc -Wall -o lidar lidar.c -lpigpio -lzmq
+
+clean:
+	rm lidar motor
