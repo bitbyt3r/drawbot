@@ -34,6 +34,13 @@ typedef struct {
   uint16_t crc;
 } PosMessage;
 
+typedef struct {
+    int64_t fr_pos;
+    int64_t fl_pos;
+    int64_t rl_pos;
+    int64_t rr_pos;
+} Position;
+
 uint16_t crc16_update(uint16_t crc, uint8_t a) {
     int i;
     crc ^= a;
@@ -79,12 +86,30 @@ bool checkCRC(PosMessage *pos) {
     return crc == pos->crc;
 }
 
+int64_t unwrap_int(int16_t new, int16_t last) {
+    int64_t dist = 0;
+    if ((new > (INT16_MAX/2)) & (last < (INT16_MAX/-2))) {
+        dist = (new - last) - INT16_MAX*2;
+    } else if ((last > (INT16_MAX/2)) & (new < (INT16_MAX/-2))) {
+        dist = INT16_MAX*2 - (last - new);
+    } else {
+        dist = new - last;
+    }
+    return dist;
+}
+
 int main() {
     signal(SIGINT, intHandler);
 
     void *context = zmq_ctx_new ();
-    void *requester = zmq_socket (context, ZMQ_PUB);
-    zmq_connect (requester, "tcp://localhost:5559");
+    void *pub_socket = zmq_socket (context, ZMQ_PUB);
+    zmq_connect (pub_socket, "tcp://localhost:5559");
+    void *sub_socket = zmq_socket(context, ZMQ_SUB);
+    zmq_connect(sub_socket, "tcp://localhost:5560");
+    if (zmq_setsockopt(sub_socket, ZMQ_SUBSCRIBE, "DRIVE", 5)) {
+        printf("Failed to setsockopt %d %s\n", errno, zmq_strerror(errno));
+    }
+
     printf("Connected\n");
 
     char *portname = "/dev/ttyACM0";
@@ -101,12 +126,16 @@ int main() {
     set_blocking (fd, 0);                // set no blocking
 
     SpeedMessage msg;
-    msg.fr_vel = 0;
-    msg.fl_vel = 0;
-    msg.rl_vel = 0;
-    msg.rr_vel = 0;
-    msg.servo_pos = 0;
-    updateCRC(&msg);
+    PosMessage last_pos;
+    last_pos.fr_pos = 0;
+    last_pos.fl_pos = 0;
+    last_pos.rl_pos = 0;
+    last_pos.rr_pos = 0;
+    Position current_pos;
+    current_pos.fr_pos = 0;
+    current_pos.fl_pos = 0;
+    current_pos.rl_pos = 0;
+    current_pos.rr_pos = 0;
 
     while (keepRunning) {
         int n = read(fd, buf+buf_start, 1);
@@ -116,19 +145,39 @@ int main() {
             PosMessage pos;
             memcpy(&pos, &buf, sizeof(pos));
             if (checkCRC(&pos)) {
-                char msg[64];
-                int msg_len = sprintf(msg, "WHEEL_ENCODER %d %d %d %d", pos.fr_pos, pos.fl_pos, pos.rl_pos, pos.rr_pos);
-                zmq_send (requester, msg, msg_len, 0);
+                current_pos.fr_pos = current_pos.fr_pos + unwrap_int(pos.fr_pos, last_pos.fr_pos);
+                current_pos.fl_pos = current_pos.fl_pos + unwrap_int(pos.fl_pos, last_pos.fl_pos);
+                current_pos.rl_pos = current_pos.rl_pos + unwrap_int(pos.rl_pos, last_pos.rl_pos);
+                current_pos.rr_pos = current_pos.rr_pos + unwrap_int(pos.rr_pos, last_pos.rr_pos);
+                memcpy(&last_pos, &pos, sizeof(pos));
+                char msg[128];
+                int msg_len = sprintf(msg, "WHEEL_ENCODER %lld %lld %lld %lld", current_pos.fr_pos, current_pos.fl_pos, current_pos.rl_pos, current_pos.rr_pos);
+                zmq_send (pub_socket, msg, msg_len, 0);
             } else {
-                buf_start++;
+                memmove(buf, buf+1, sizeof(buf)-1);
+                buf_start = sizeof(buf)-1;
+            }
+        }
+
+        char buffer [64];
+        if (zmq_recv (sub_socket, buffer, sizeof(buffer), ZMQ_DONTWAIT) > 0) {
+            int m1, m2, m3, m4, servo;
+            if (sscanf(buffer, "DRIVE %d %d %d %d %d", &m1, &m2, &m3, &m4, &servo)) {
+                msg.fr_vel = m1;
+                msg.fl_vel = m2;
+                msg.rl_vel = m3;
+                msg.rr_vel = m4;
+                msg.servo_pos = servo;
+                updateCRC(&msg);
+                write(fd, &msg, sizeof(msg));
             }
         }
     }
 
-    //write (fd, &msg, sizeof(msg));
     printf("Shutting down...\n");
     close(fd);
-    zmq_close (requester);
+    zmq_close (pub_socket);
+    zmq_close (sub_socket);
     zmq_ctx_destroy (context);
     return 0;
 }

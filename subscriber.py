@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+import readline
 import sys
 import zmq
 
@@ -9,8 +9,12 @@ context = zmq.Context()
 socket = context.socket(zmq.SUB)
 print("Collecting updates from server...")
 socket.connect ("tcp://localhost:%s" % port)
-topicfilter = ""
-socket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
+if len(sys.argv) == 1:
+  topicfilter = ""
+  socket.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
+else:
+    for arg in sys.argv[1:]:
+        socket.setsockopt_string(zmq.SUBSCRIBE, arg)
 while True:
     string = socket.recv()
     print(string)

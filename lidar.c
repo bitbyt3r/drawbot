@@ -12,10 +12,15 @@
 #define FAULT 20
 #define SENTINEL 0xFA
 
-static volatile int keepRunning = 1;
+static volatile sig_atomic_t keepRunning = 1;
 
 void intHandler(int dummy) {
     keepRunning = 0;
+    printf("Shutting down\n");
+    gpioWrite(SLEEP, 0);
+    gpioPWM(MOTOR_B, 0);
+    gpioTerminate();
+    exit(0);
 }
 
 typedef struct {
@@ -37,6 +42,12 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     signal(SIGINT, intHandler);
+    struct sigaction action;
+    memset(&action, 0, sizeof(struct sigaction));
+    action.sa_handler = intHandler;
+    sigaction(SIGTERM, &action, NULL);
+    sigaction(SIGCONT, &action, NULL);
+    sigaction(SIGHUP, &action, NULL);
 
     gpioSetMode(MOTOR_A, PI_OUTPUT);
     gpioSetMode(MOTOR_B, PI_OUTPUT);
@@ -104,9 +115,5 @@ int main(int argc, char *argv[]) {
         idx = 0;
         buf[0] = 0;
     }
-
-    printf("Shutting down\n");
-    gpioWrite(SLEEP, 0);
-    gpioTerminate();
     return 0;
 }
