@@ -64,27 +64,25 @@ for start, end in zip(points, points[1:]):
     while (time.time() - start_time) < accel_time:
         travelled_distance = 0.5 * max_a * (time.time() - start_time)**2
         goal = start + heading * travelled_distance
-        trajectory.append([time.time() - original_start, goal[0], goal[1], goal[2]])
+        #trajectory.append([time.time() - original_start, goal[0], goal[1], goal[2]])
+        socket.send(f"GOAL {goal[0]} {goal[1]} {goal[2]}".encode('UTF-8'))
         time.sleep(OMEGA)
     
     while (travel_time - accel_time) > (time.time() - start_time):
         goal = start + heading * (accel_distance + max_v * ((time.time() - start_time) - accel_time))
-        trajectory.append([time.time() - original_start, goal[0], goal[1], goal[2]])
+        #trajectory.append([time.time() - original_start, goal[0], goal[1], goal[2]])
+        socket.send(f"GOAL {goal[0]} {goal[1]} {goal[2]}".encode('UTF-8'))
         time.sleep(OMEGA)
 
     while travel_time > (time.time() - start_time):
         remaining_distance = 0.5 * max_a * (travel_time - (time.time() - start_time))**2
         goal = end - heading * remaining_distance
-        trajectory.append([time.time() - original_start, goal[0], goal[1], goal[2]])
+        #trajectory.append([time.time() - original_start, goal[0], goal[1], goal[2]])
+        socket.send(f"GOAL {goal[0]} {goal[1]} {goal[2]}".encode('UTF-8'))
         time.sleep(OMEGA)
 
-with open("trajectory.csv", "w") as FILE:
-    FILE.write("Time,X,Y,Theta\n")
-    for point in trajectory:
-        strs = map(str, point)
-        FILE.write(f"{','.join(strs)}\n")
-
-
-
-
-#socket.send(string.encode("UTF-8"))
+# with open("trajectory.csv", "w") as FILE:
+#     FILE.write("Time,X,Y,Theta\n")
+#     for point in trajectory:
+#         strs = map(str, point)
+#         FILE.write(f"{','.join(strs)}\n")

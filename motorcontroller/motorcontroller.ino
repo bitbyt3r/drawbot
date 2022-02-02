@@ -6,9 +6,9 @@
 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
 Adafruit_DCMotor *fr = AFMS.getMotor(1);
-Adafruit_DCMotor *fl = AFMS.getMotor(2);
-Adafruit_DCMotor *rl = AFMS.getMotor(3);
-Adafruit_DCMotor *rr = AFMS.getMotor(4);
+Adafruit_DCMotor *fl = AFMS.getMotor(3);
+Adafruit_DCMotor *rl = AFMS.getMotor(4);
+Adafruit_DCMotor *rr = AFMS.getMotor(2);
 Servo servo;
 
 typedef struct {
@@ -59,8 +59,8 @@ void updateMotor(int16_t velocity, uint8_t idx) {
 }
 
 void updateMotors(SpeedMessage *msg) {
-  updateMotor(msg->fr_vel, 0);
-  updateMotor(msg->fl_vel, 1);
+  updateMotor(msg->fr_vel*-1, 0);
+  updateMotor(msg->fl_vel*-1, 1);
   updateMotor(msg->rl_vel, 2);
   updateMotor(msg->rr_vel, 3);
   servo.write(msg->servo_pos);
@@ -130,6 +130,7 @@ uint8_t buffer_start;
 uint8_t buffer_size;
 
 void setup() {
+  AFMS.begin();
   DDRK = 0;
   PORTK = 0x00;
   pos.fr_pos = 0;
