@@ -175,6 +175,13 @@ int main() {
     }
 
     printf("Shutting down...\n");
+    msg.fr_vel = 0;
+    msg.fl_vel = 0;
+    msg.rl_vel = 0;
+    msg.rr_vel = 0;
+    msg.servo_pos = 0;
+    updateCRC(&msg);
+    write(fd, &msg, sizeof(msg));
     close(fd);
     zmq_close (pub_socket);
     zmq_close (sub_socket);

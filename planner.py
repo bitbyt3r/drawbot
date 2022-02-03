@@ -33,11 +33,11 @@ while True:
         print(f"Could not parse '{string}'.")
 
 def max_velocity(heading):
-    return 1
+    return 0.1
     # finds the max relative velocity when traveling in the given direction
 
 def max_acceleration(heading):
-    return 1
+    return 0.1
     # finds the max relative acceleration when traveling in the given direction
 
 trajectory = []
