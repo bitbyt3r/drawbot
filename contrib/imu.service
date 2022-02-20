@@ -1,0 +1,14 @@
+[Unit]
+Description=Drawbot IMU
+PartOf=drawbot.service
+After=drawbot.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 imu.py
+WorkingDirectory=/home/pi/git/drawbot
+Environment="PYTHONPATH=/usr/local/lib/python3.9/dist-packages"
+Restart=always
+
+[Install]
+WantedBy=drawbot.service

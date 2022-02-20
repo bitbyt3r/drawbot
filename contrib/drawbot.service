@@ -1,0 +1,11 @@
+[Unit]
+Description=Core services for drawbot
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 forwarder_device.py
+WorkingDirectory=/home/pi/git/drawbot
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

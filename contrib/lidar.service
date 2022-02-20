@@ -1,0 +1,12 @@
+[Unit]
+Description=Drawbot Lidar
+PartOf=drawbot.service
+After=drawbot.service
+
+[Service]
+Type=simple
+ExecStart=/home/pi/git/drawbot/lidar
+Restart=always
+
+[Install]
+WantedBy=drawbot.service

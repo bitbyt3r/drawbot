@@ -1,0 +1,12 @@
+[Unit]
+Description=Drawbot Webserver
+PartOf=drawbot.service
+After=drawbot.service
+
+[Service]
+Type=simple
+ExecStart=/home/pi/git/drawbot/webserver
+Restart=always
+
+[Install]
+WantedBy=drawbot.service

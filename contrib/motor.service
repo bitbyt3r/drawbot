@@ -1,0 +1,12 @@
+[Unit]
+Description=Drawbot Motor Controller
+PartOf=drawbot.service
+After=drawbot.service
+
+[Service]
+Type=simple
+ExecStart=/home/pi/git/drawbot/motor
+Restart=always
+
+[Install]
+WantedBy=drawbot.service

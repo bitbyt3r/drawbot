@@ -1,0 +1,12 @@
+[Unit]
+Description=Drawbot Camera SLAM
+PartOf=drawbot.service
+After=drawbot.service
+
+[Service]
+Type=simple
+ExecStart=/home/pi/git/drawbot/camera
+Restart=always
+
+[Install]
+WantedBy=drawbot.service

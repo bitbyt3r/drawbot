@@ -1,3 +1,7 @@
+camera
 lidar
 motor
+webserver
 trajectory.csv
+__pycache__/
+*.jpg

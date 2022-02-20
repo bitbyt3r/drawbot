@@ -27,7 +27,6 @@
                 return [x, y];
             }
             function draw() {
-                console.log("Drawing");
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 points.forEach(point => {
                     let [x, y] = pos(point.distance, point.angle);
@@ -35,7 +34,7 @@
                 })
             }
             window.setInterval(draw, 30);
-            var ws = new WebSocket("ws://192.168.1.146:8765/");
+            var ws = new WebSocket("ws://192.168.1.146:8080/");
             ws.onmessage = function (event) {
                 let data = JSON.parse(event.data);
                 data.forEach(point => {
@@ -43,6 +42,42 @@
                     points.push(point);
                 })
             };
+
+            let last = [0, 0, 0, 0];
+            let gamepad = null;
+            function drive() {
+                if (gamepad != null) {
+                    var gp = navigator.getGamepads()[gamepad.index];
+                    x = gp.axes[0];
+                    y = gp.axes[1] * -1;
+                    theta = gp.axes[2] * -1;
+                    let angle = Math.atan2(y, x);
+                    let magnitude = Math.sqrt(y * y + x * x)*2048;
+                    let fr = parseInt(Math.sin(angle + Math.PI / 4) * magnitude + theta*2048);
+                    let rl = parseInt(Math.sin(angle + Math.PI / 4) * magnitude - theta*2048);
+                    let fl = parseInt(Math.sin(angle - Math.PI / 4) * magnitude - theta*2048);
+                    let rr = parseInt(Math.sin(angle - Math.PI / 4) * magnitude + theta*2048);
+                    if (last[0] != fr | last[1] != rl | last[2] != fl | last[3] != rr) {
+                        ws.send("DRIVE "+fr+" "+fl+" "+rl+" "+rr+" 0");
+                    }
+                    last = [fr, rl, fl, rr];
+                }
+            }
+
+            window.addEventListener("gamepadconnected", function(e) {
+                console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+                e.gamepad.index, e.gamepad.id,
+                e.gamepad.buttons.length, e.gamepad.axes.length);
+                gamepad = e.gamepad;
+            });
+
+            window.addEventListener("gamepaddisconnected", function(e) {
+                console.log("Gamepad disconnected");
+                gamepad = null;
+                ws.send("DRIVE 0 0 0 0 0");
+            });
+
+            window.setInterval(drive, 15);
         </script>
     </body>
 </html>
