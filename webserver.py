@@ -1,7 +1,6 @@
 #!/usr/bin/python
 import sys
 import zmq
-import json
 import asyncio
 import websockets
 import zmq.asyncio
@@ -26,24 +25,16 @@ async def proxy(websocket, path):
     socket = context.socket(zmq.SUB)
     socket.connect(f"tcp://localhost:5560")
     socket.setsockopt_string(zmq.SUBSCRIBE, "LIDAR")
-    zmq_prod = zmq_producer(socket)
-    ws_prod = ws_producer(websocket)
-
-    events = stream.merge(zmq_prod, ws_prod)
-    async with events.stream() as streamer:
-        async for item in streamer:
-            if type(item) is list:
-                string = item[0].decode('UTF-8')
-                parts = string.split(" ")
-                if parts[0] == "LIDAR":
-                    data = {
-                        "angle": float(parts[1]),
-                        "distance": float(parts[2]),
-                        "quality": int(parts[3])
-                    }
-                    await websocket.send(json.dumps(data))
-            else:
-                await pub_socket.send(item.encode('UTF-8'))
+    while True:
+        points = []
+        available = await socket.poll()
+        while available and len(points) < 36:
+            packet = await socket.recv_multipart()
+            parts = packet[0].decode('UTF-8').split(" ")
+            points.append(f'{{"angle": {parts[1]}, "distance": {parts[2]}}}')
+            available = await socket.poll()
+        if points:
+            await websocket.send(f'[{",".join(points)}]')
 
 start_server = websockets.serve(proxy, '0.0.0.0', 8765)
 

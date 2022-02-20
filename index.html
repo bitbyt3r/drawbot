@@ -22,24 +22,26 @@
                 ctx.canvas.height = window.innerHeight;
             }
             function pos(r, theta) {
-                let x = (Math.cos(theta) * r)/10 + window.innerWidth/2;
-                let y = (Math.sin(theta) * r)/10 + window.innerHeight/2;
+                let x = (Math.sin(theta + Math.PI) * r)/10 + window.innerWidth/2;
+                let y = (Math.cos(theta + Math.PI) * r)/10 + window.innerHeight/2;
                 return [x, y];
             }
             function draw() {
+                console.log("Drawing");
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 points.forEach(point => {
                     let [x, y] = pos(point.distance, point.angle);
                     ctx.fillRect(x, y, 5, 5);
                 })
             }
-            window.setTimeout(draw, 30);
+            window.setInterval(draw, 30);
             var ws = new WebSocket("ws://192.168.1.146:8765/");
             ws.onmessage = function (event) {
                 let data = JSON.parse(event.data);
-                let removed = points.shift();
-                points.push(data);
-                draw(removed, data);
+                data.forEach(point => {
+                    points.shift();
+                    points.push(point);
+                })
             };
         </script>
     </body>
