@@ -6,9 +6,15 @@ import zmq
 import os
 
 DEVICE = "/dev/input/event0"
-AXES = [(0, 1), (1, -1), (3, -1)]
-RANGES = {0: [7200, 57584], 1: [8543, 61171], 3: [6768, 56608]}
-DEADZONE = 0.2
+# Procon
+#AXES = [(0, 1), (1, -1), (3, -1)]
+#RANGES = {0: [7200, 57584], 1: [8543, 61171], 3: [6768, 56608]}
+#DEADZONE = 0.2
+
+# Stadia
+AXES = [(0, 1), (1, -1), (2, -1)]
+RANGES = {0: [0, 255], 1: [0, 255], 2: [0, 255]}
+DEADZONE = 0.02
 
 print("Waiting for joystick...")
 while not os.path.exists(DEVICE):

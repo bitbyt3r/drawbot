@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>WebSocket demo</title>
+    </head>
+    <body>
+        <canvas id="lidar" style="width: 1920px; height: 1080px">
+        </canvas>
+        <script>
+            var points = [];
+            for (let i=0; i<360; i++) {
+                points.push({angle: 3.141592*(i/180), distance:0, quality:0});
+            }
+            var canvas = document.getElementById('lidar');
+            var ctx = canvas.getContext('2d');
+            
+            ctx.canvas.width  = window.innerWidth;
+            ctx.canvas.height = window.innerHeight;
+
+            window.onresize = function() {
+                ctx.canvas.width  = window.innerWidth;
+                ctx.canvas.height = window.innerHeight;
+            }
+            function pos(r, theta) {
+                let x = (Math.cos(theta) * r)/10 + window.innerWidth/2;
+                let y = (Math.sin(theta) * r)/10 + window.innerHeight/2;
+                return [x, y];
+            }
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                points.forEach(point => {
+                    let [x, y] = pos(point.distance, point.angle);
+                    ctx.fillRect(x, y, 5, 5);
+                })
+            }
+            window.setTimeout(draw, 30);
+            var ws = new WebSocket("ws://192.168.1.146:8765/");
+            ws.onmessage = function (event) {
+                let data = JSON.parse(event.data);
+                let removed = points.shift();
+                points.push(data);
+                draw(removed, data);
+            };
+        </script>
+    </body>
+</html>
