@@ -16,5 +16,5 @@ else:
     for arg in sys.argv[1:]:
         socket.setsockopt_string(zmq.SUBSCRIBE, arg)
 while True:
-    string = socket.recv()
+    string = socket.recv().decode('UTF-8')
     print(string)
