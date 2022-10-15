@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import readline
+import time
 import sys
 import zmq
 
@@ -17,4 +18,4 @@ else:
         socket.setsockopt_string(zmq.SUBSCRIBE, arg)
 while True:
     string = socket.recv().decode('UTF-8')
-    print(string)
+    print(time.time(), string)

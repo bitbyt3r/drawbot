@@ -1,4 +1,7 @@
-all: camera motor lidar webserver
+all: camera motor lidar webserver record-camera
+
+record-camera: record-camera.cpp
+	g++ -I/usr/local/include/opencv4 -L/usr/local/lib/arm-linux-gnueabihf -o record-camera record-camera.cpp -lopencv_imgcodecs -lopencv_core -lopencv_imgproc -lopencv_videoio
 
 camera: camera.cpp
 	g++ -I/usr/local/include/opencv4 -L/usr/local/lib/arm-linux-gnueabihf -o camera camera.cpp -lopencv_imgcodecs -lopencv_core -lopencv_imgproc -lopencv_videoio
