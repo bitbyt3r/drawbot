@@ -145,9 +145,11 @@ if __name__ == "__main__":
             matches = []
             new_points = []
             likely_pos = [position[0]+velocity[0], position[1]+velocity[1], position[2]+velocity[2]]
+            relative_points = []
             for keypoint in keypoints:
                 u, v = keypoint.pt
                 relative_point = camera_to_relative(u, v, width, height, THETA, phi, CEILING_HEIGHT)
+                relative_points.append(relative_point)
                 likely_point = relative_to_absolute(relative_point, likely_pos)
                 point = relative_to_absolute(relative_point, position)
                 match = match_point(likely_point, atlas)
@@ -165,7 +167,9 @@ if __name__ == "__main__":
                 "estimated_position": position,
                 "visible_points": len(keypoints),
                 "matched_points": len(matches),
-                "mapped_points": len(atlas)
+                "mapped_points": len(atlas),
+                "points": relative_points,
+                "map": [point for label, point in atlas.items()]
             })
             idx += 1
             pos_x.append(position[0])
