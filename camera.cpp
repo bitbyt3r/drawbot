@@ -58,7 +58,6 @@ int main(int, char**) {
         Mat drawing = video;
         for( size_t i = 0; i< contours.size(); i++ )
         {
-	    break;
             Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
             // contour
             drawContours( drawing, contours, (int)i, color );

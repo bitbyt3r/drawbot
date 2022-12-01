@@ -37,7 +37,11 @@ int main(int, char**) {
         cap >> video;
 	gettimeofday(&tp, NULL);
 	std::string name = "./capture/color_" + std::to_string(tp.tv_sec) + "." + std::to_string(tp.tv_usec / 1000) + ".jpg";
-        imwrite(name, video);
+	try {
+            imwrite(name, video);
+	} catch (...) {
+	    printf("Failed to save frame\n");
+	}
 
         auto now = high_resolution_clock::now();
         auto diff = duration_cast<microseconds>(now - start);

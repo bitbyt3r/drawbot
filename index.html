@@ -34,7 +34,7 @@
                 })
             }
             window.setInterval(draw, 30);
-            var ws = new WebSocket("ws://10.1.32.105:8080/");
+            var ws = new WebSocket("ws://" + window.location.hostname + ":8080/");
             ws.onmessage = function (event) {
                 let data = JSON.parse(event.data);
                 data.forEach(point => {

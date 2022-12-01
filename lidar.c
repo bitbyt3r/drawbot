@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     gpioWrite(MOTOR_A, 0);
     gpioWrite(SLEEP, 1);
-    gpioPWM(MOTOR_B, 205);
+    gpioPWM(MOTOR_B, 220);
 
     void *context = zmq_ctx_new ();
     void *requester = zmq_socket (context, ZMQ_PUB);

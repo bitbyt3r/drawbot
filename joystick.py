@@ -5,7 +5,7 @@ import time
 import zmq
 import os
 
-DEVICE = "/dev/input/event0"
+DEVICE = "/dev/input/event3"
 # Procon
 #AXES = [(0, 1), (1, -1), (3, -1)]
 #RANGES = {0: [7200, 57584], 1: [8543, 61171], 3: [6768, 56608]}
@@ -33,6 +33,7 @@ while True:
     vals = []
     for axis, direction in AXES:
         val = device.absinfo(axis).value
+        print(val)
         if not axis in RANGES:
             RANGES[axis] = [val, val]
         if val > RANGES[axis][1]:
